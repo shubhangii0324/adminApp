@@ -15,30 +15,37 @@ import Breadcrumb from '../common/breadcrumb';
 
 const Products = (props) => {
 
+
+  const [productCode, setProductCode] = useState('');
   const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [mrpPrice, setMrpPrice] = useState('');
+  const [listPrice, setListPrice] = useState('');
+  const [makingCost, setMakingCost] = useState('');
+  const [gst, setGst] = useState('');
+  const [size, setSize] = useState('')
   const [description, setDescription] = useState('');
   const [cluster, setCluster] = useState('');
   const [artisan, setArtisan] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [productPictures, setProductPictures] = useState([]);
-  const [show, setShow] = useState(false);
-  const [productDetailModal, setProductDetailModal] = useState(false);
-  const [productDetails, setProductDetails] = useState(null);
   const category = useSelector(state => state.category);
   const product = useSelector(state => state.product);
   const dispatch = useDispatch();
 
-
   const handleClose = () => {
 
     const form = new FormData();
+    form.append('productCode', productCode);
     form.append('name', name);
     form.append('cluster', cluster);
     form.append('artisan', artisan);
     form.append('quantity', quantity);
-    form.append('price', price);
+    form.append('mrpPrice', mrpPrice);
+    form.append('listPrice', listPrice);
+    form.append('makingCost', makingCost);
+    form.append('gst', setGst);
+    form.append('size', size);
     form.append('description', description);
     form.append('category', categoryId);
 
@@ -48,11 +55,7 @@ const Products = (props) => {
 
 
     dispatch(addProduct(form));
-
-
-    setShow(false);
-  }
-  const handleShow = () => setShow(true);
+}
 
   const createCategoryList = (categories, options = []) => {
 
@@ -115,7 +118,7 @@ const Products = (props) => {
                                         <i className="fa fa-star"></i>
                                     </div>
                                     <a> <h6>{product.name}</h6></a>
-                                    <h4>{product.price} <del >{product.price}</del></h4>
+                                    <h4>{product.listPrice} <del >{product.mrpPrice}</del></h4>
                                     <ul className="color-variant">
                                         <li className="bg-light0"></li>
                                         <li className="bg-light1"></li>
@@ -131,146 +134,9 @@ const Products = (props) => {
         }
         </div>
         );
-    }
+      }
 
-  const renderAddProductModal = () => {
-    return (
-      <Modal
-        show={show}
-        handleClose={handleClose}
-        modalTitle={'Add New Product'}
-      >
-        <Input
-          label="Name"
-          value={name}
-          placeholder={`Product Name`}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
-          label="Cluster Name"
-          value={cluster}
-          placeholder={`Cluster Name`}
-          onChange={(e) => setCluster(e.target.value)}
-        />
-        <Input
-          label="Artisan Name"
-          value={artisan}
-          placeholder={`Artisan Name`}
-          onChange={(e) => setArtisan(e.target.value)}
-        />
-        <Input
-          label="Quantity"
-          value={quantity}
-          placeholder={`Quantity`}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
-        <Input
-          label="Price"
-          value={price}
-          placeholder={`Price`}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <Input
-          label="Description"
-          value={description}
-          placeholder={`Description`}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <select
-          className="form-control"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}>
-          <option>select category</option>
-          {
-            createCategoryList(category.categories).map(option =>
-              <option key={option.value} value={option.value}>{option.name}</option>)
-          }
-        </select>
-        {
-          productPictures.length > 0 ?
-            productPictures.map((pic, index) => <div key={index}>{pic.name}</div>) : null
-        }
-        <input type="file" name="productPicture" onChange={handleProductPictures} />
-      </Modal>
-    );
-  }
 
-  const handleCloseProductDetailsModal = () => {
-    setProductDetailModal(false);
-  }
-  
-  const showProductDetailsModal = (product) => {
-    setProductDetails(product);
-    setProductDetailModal(true);
-  }
-
-  const renderProductDetailsModal = () => {
-
-    if(!productDetails){
-      return null;
-    }
-
-    return (
-      <Modal
-        show={productDetailModal}
-        handleClose={handleCloseProductDetailsModal}
-        modalTitle={'Product Details'}
-        size="lg"
-      >
-
-        <Row>
-          <Col md="6">
-            <label className="key">Name</label>
-            <p className="value">{productDetails.name}</p>
-          </Col>
-          <Col md="6">
-            <label className="key">Price</label>
-            <p className="value">{productDetails.price}</p>
-          </Col>
-        </Row>
-        <Row>
-          <Col md="6">
-            <label className="key">Quantity</label>
-            <p className="value">{productDetails.quantity}</p>
-          </Col>
-          <Col md="6">
-            <label className="key">Category</label>
-            <p className="value">{productDetails.category.name}</p>
-          </Col>
-        </Row>
-        <Row>
-          <Col md="12">
-            <label className="key">Description</label>
-            <p className="value">{productDetails.description}</p>
-          </Col>
-        </Row>
-        <Row>
-        <Col md="6">
-            <label className="key">Cluster Name</label>
-            <p className="value">{productDetails.cluster}</p>
-          </Col>
-          <Col md="6">
-            <label className="key">Artisan Name</label>
-            <p className="value">{productDetails.artisan}</p>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <label className="key">Product Pictures</label>
-            <div style={{display: 'flex'}}>
-              {productDetails.productPictures.map(picture => 
-                <div className="productImgContainer">
-                  <img src={generatePublicUrl(picture.img)} />
-                </div>  
-              )}
-            </div>
-            
-          </Col>
-        </Row>
-
-      </Modal>
-    );
-  }
   return (
       <Fragment>
           <Breadcrumb title="Product List" parent="Products" />
@@ -281,8 +147,6 @@ const Products = (props) => {
           </Col>
         </Row>
       </Container>
-      {renderAddProductModal()}
-      {renderProductDetailsModal()}
       </Fragment>
   )
 

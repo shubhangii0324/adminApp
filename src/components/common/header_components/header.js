@@ -84,7 +84,7 @@ const Header = (props) => {
                 </li>
                 <User_menu />
                 <li className="nav-item">
-                    <NavLink to="signin" className="nav-link" onClick={logout} >Signout</NavLink>
+                <a onClick={logout} className="text-dark nav-link" href="/signin">Signout</a>
                 </li>
             </ul>
             <div className="d-lg-none mobile-toggle pull-right" onClick={() => toggle}><MoreHorizontal /></div>

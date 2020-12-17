@@ -1,13 +1,24 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableFooter from '@material-ui/core/TableFooter';
+import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+import IconButton from '@material-ui/core/IconButton';
 import { useDispatch, useSelector } from 'react-redux';
-import Breadcrumb from '../common/breadcrumb';
 import {
     getAllCategory,
     addCategory,
     updateCategories,
     deleteCategories as deleteCategoriesAction
 } from '../../actions';
+import { generatePublicUrl } from '../../UrlConfig';
 import Modal from '../UI/Modal';
 import CheckboxTree from 'react-checkbox-tree';
 import {
@@ -38,11 +49,15 @@ const Category = (props) => {
     const [show, setShow] = useState(false);
     const [checked, setChecked] = useState([]);
     const [expanded, setExpanded] = useState([]);
+    const [productDetailModal, setProductDetailModal] = useState(false);
+    const [productDetails, setProductDetails] = useState(null);
     const [checkedArray, setCheckedArray] = useState([]);
     const [expandedArray, setExpandedArray] = useState([]);
     const [updateCategoryModal, setUpdateCategoryModal] = useState(false);
     const [deleteCategoryModal, setDeleteCategoryModal] = useState(false);
+    const product = useSelector(state => state.product);
     const dispatch = useDispatch();
+
 
     useEffect(() => {
 
@@ -73,18 +88,57 @@ const Category = (props) => {
     }
     const handleShow = () => setShow(true);
 
-    const renderCategories = (categories) => {
-        let myCategories = [];
-        for (let category of categories) {
-            myCategories.push(
-                {
-                    label: category.name,
-                    value: category._id,
-                    children: category.children.length > 0 && renderCategories(category.children)
-                }
-            );
-        }
-        return myCategories;
+    const useStyles = makeStyles({
+      table: {
+        minWidth: 650,
+      },
+    });
+
+    const classes = useStyles();
+
+    const renderCategories = () => {
+
+      
+
+        return (
+          <TableContainer className={classes.table} component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell align="right">MRP</TableCell>
+                  <TableCell align="right">List Price</TableCell>
+                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Category</TableCell>
+                  <TableCell align="right">Cluster</TableCell>
+                  <TableCell align="right"></TableCell>
+                  <TableCell align="right"></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+              {
+          product.products.length > 0 ?
+            product.products.map(product =>
+              <TableRow>
+                <TableCell>{product.name}</TableCell>
+                <TableCell align="right">{product.mrpPrice}</TableCell>
+                <TableCell align="right">{product.listPrice}</TableCell>
+                <TableCell align="right">{product.quantity}</TableCell>
+                <TableCell align="right">{product.category.name}</TableCell>
+                <TableCell align="right">{product.cluster}</TableCell>
+                <TableCell align="right">
+                <i className="fa fa-pencil" style={{ width: 35, fontSize: 20, padding: 11,color:'rgb(40, 167, 69)' }}></i>
+                <i className="fa fa-trash" style={{ width: 35, fontSize: 20, padding: 11, color: '#e4566e' }}></i>
+                </TableCell>
+              </TableRow>
+            ) : null
+      }
+              </TableBody>
+              </Table>
+      </TableContainer>
+              
+            
+          );
     }
 
     const createCategoryList = (categories, options = []) => {
@@ -107,6 +161,77 @@ const Category = (props) => {
     const handleCategoryImage = (e) => {
         setCategoryImage(e.target.files[0]);
     }
+
+    const handleCloseProductDetailsModal = () => {
+        setProductDetailModal(false);
+      }
+      
+      const showProductDetailsModal = (product) => {
+        setProductDetails(product);
+        setProductDetailModal(true);
+      }
+    
+      const renderProductDetailsModal = () => {
+    
+        if(!productDetails){
+          return null;
+        }
+    
+        return (
+          <Modal
+            show={productDetailModal}
+            handleClose={handleCloseProductDetailsModal}
+            modalTitle={'Product Details'}
+            size="lg"
+          >
+    
+            <Row>
+              <Col md="4">
+                <label className="key">Name</label>
+                <p className="value">{productDetails.name}</p>
+              </Col>
+              <Col md="4">
+                <label className="key">MRP Price</label>
+                <p className="value">{productDetails.mrpPrice}</p>
+              </Col>
+              <Col md="4">
+                <label className="key">List Price</label>
+                <p className="value">{productDetails.listPrice}</p>
+              </Col>
+            </Row>
+            <Row>
+              <Col md="6">
+                <label className="key">Quantity</label>
+                <p className="value">{productDetails.quantity}</p>
+              </Col>
+              <Col md="6">
+                <label className="key">Category</label>
+                <p className="value">{productDetails.category.name}</p>
+              </Col>
+            </Row>
+            <Row>
+              <Col md="12">
+                <textarea className="key">Description</textarea>
+                <p className="value">{productDetails.description}</p>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <label className="key">Product Pictures</label>
+                <div style={{display: 'flex'}}>
+                  {productDetails.productPictures.map(picture => 
+                    <div className="productImgContainer">
+                      <img src={generatePublicUrl(picture.img)} />
+                    </div>  
+                  )}
+                </div>
+                
+              </Col>
+            </Row>
+    
+          </Modal>
+        );
+      }
 
     const updateCategory = () => {
         updateCheckedAndExpandedCategories();
@@ -222,34 +347,28 @@ const Category = (props) => {
 
     return (
         <Fragment>
-            <Breadcrumb title="Category List" parent="Categories" />
             <Container>
                 <Row>
                     <Col md={12}>
-                            <div className="pull-right">
-                                <button style={{margin: '5px'}} type="button" className="btn btn-primary" onClick={handleShow}><IoIosAdd /> <span>Add</span></button>
-                                <button style={{margin: '5px'}} type="button" className="btn btn-primary" onClick={deleteCategory}><IoIosTrash /> <span>Delete</span></button>
-                                <button style={{margin: '5px'}} type="button" className="btn btn-primary" onClick={updateCategory}><IoIosCloudUpload /> <span>Edit</span></button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <h3>Product Table</h3>
+                            <div className="actionBtnContainer btn-popup pull-right">
+                                <button style={{margin: "5px"}} type="button" className="btn btn-primary" onClick={handleShow}><IoIosAdd /> <span>Add Category</span></button>
+                                {/* <button style={{margin: "5px"}} type="button" className="btn btn-primary" onClick={deleteCategory}><IoIosTrash /> <span>Delete</span></button>
+                                <button style={{margin: "5px"}} type="button" className="btn btn-primary" onClick={updateCategory}><IoIosCloudUpload /> <span>Edit</span></button> */}
                             </div>
+
+                        </div>
 
                     </Col>
                 </Row>
                 <Row>
                     <Col md={12}>
-                        <CheckboxTree
-                            nodes={renderCategories(category.categories)}
-                            checked={checked}
-                            expanded={expanded}
-                            onCheck={checked => setChecked(checked)}
-                            onExpand={expanded => setExpanded(expanded)}
-                            icons={{
-                                check: <IoIosCheckbox />,
-                                uncheck: <IoIosCheckboxOutline />,
-                                halfCheck: <IoIosCheckboxOutline />,
-                                expandClose: <IoIosArrowForward />,
-                                expandOpen: <IoIosArrowDown />
-                            }}
-                        />
+                        
+                    <div className="clearfix"></div>
+                                    <div id="basicScenario" className="product-physical">
+                                        {renderCategories()}
+                                    </div>
                     </Col>
                 </Row>
             </Container>
@@ -278,6 +397,7 @@ const Category = (props) => {
             />
             {/* {renderAddCategoryModal()} */}
             {renderDeleteCategoryModal()}
+            {renderProductDetailsModal()}
         </Fragment>
     )
 

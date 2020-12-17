@@ -31,11 +31,25 @@ const Tabset = (props) => {
     form.append('name', name);
     form.append('rate', rate);
     form.append('price', price);
+    form.append('categoryId', categoryId);
 
     dispatch(addTaxes(form))
 
 
   }
+
+  const createCategoryList = (categories, options = []) => {
+
+    for (let category of categories) {
+      options.push({ value: category._id, name: category.name });
+      if (category.children.length > 0) {
+        createCategoryList(category.children, options)
+      }
+    }
+
+    return options;
+  }
+
 
 
   return (
@@ -59,6 +73,21 @@ const Tabset = (props) => {
                                 <label className="col-xl-3 col-md-4"><span>*</span> Price</label>
                                 <input className="form-control col-xl-8 col-md-7" value={price} onChange={(e) => setPrice(e.target.value)} id="validationCustom2" type="text" required="" />
                             </div>
+                            <div className="form-group row">
+                                                    <label className="col-xl-3 col-md-4">Category :</label>
+                                                    <div className="col-xl-8 col-sm-7">
+                                                    <select
+                                                        className="form-control"
+                                                        value={categoryId}
+                                                        onChange={(e) => setCategoryId(e.target.value)}>
+                                                        <option>select category</option>
+                                                        {
+                                                            createCategoryList(category.categories).map(option =>
+                                                            <option key={option.value} value={option.value}>{option.name}</option>)
+                                                        }
+                                                    </select>
+                                                    </div>
+                                                    </div>
                         </form>
                     </TabPanel>
                 </Tabs>
